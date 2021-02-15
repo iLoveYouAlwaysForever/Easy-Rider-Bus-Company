@@ -1,0 +1,223 @@
+import json
+import re
+import itertools
+
+n = [{"bus_id" : 128, "stop_id" : 1, "stop_name" : "Fifth Avenue", "next_stop" : 4, "stop_type" : "S", "a_time" : "08:12"},
+     {"bus_id" : 128, "stop_id" : 4, "stop_name" : "Abbey Road", "next_stop" : 5, "stop_type" : "", "a_time" : "08:19"},  
+     {"bus_id" : 128, "stop_id" : 5, "stop_name" : "Santa Monica Boulevard", "next_stop" : 8, "stop_type" : "O", "a_time" : "08:25"}, 
+     {"bus_id" : 128, "stop_id" : 8, "stop_name" : "Elm Street", "next_stop" : 11, "stop_type" : "", "a_time" : "08:37"},  
+     {"bus_id" : 128, "stop_id" : 11, "stop_name" : "Beale Street", "next_stop" : 12, "stop_type" : "", "a_time" : "09:20"},  
+     {"bus_id" : 128, "stop_id" : 12, "stop_name" : "Sesame Street", "next_stop" : 14, "stop_type" : "", "a_time" : "09:45"}, 
+     {"bus_id" : 128, "stop_id" : 14, "stop_name" : "Bourbon Street", "next_stop" : 19, "stop_type" : "O", "a_time" : "09:59"},  
+     {"bus_id" : 128, "stop_id" : 19, "stop_name" : "Prospekt Avenue", "next_stop" : 0, "stop_type" : "F", "a_time" : "10:12"}, 
+     {"bus_id" : 256, "stop_id" : 2, "stop_name" : "Pilotow Street", "next_stop" : 3, "stop_type" : "S", "a_time" : "08:13"},  
+     {"bus_id" : 256, "stop_id" : 3, "stop_name" : "Startowa Street", "next_stop" : 8, "stop_type" : "", "a_time" : "08:16"},  
+     {"bus_id" : 256, "stop_id" : 8, "stop_name" : "Elm Street", "next_stop" : 10, "stop_type" : "", "a_time" : "08:29"}, 
+     {"bus_id" : 256, "stop_id" : 10, "stop_name" : "Lombard Street", "next_stop" : 12, "stop_type" : "", "a_time" : "08:44"},
+     {"bus_id" : 256, "stop_id" : 12, "stop_name" : "Sesame Street", "next_stop" : 13, "stop_type" : "O", "a_time" : "08:46"},  
+     {"bus_id" : 256, "stop_id" : 13, "stop_name" : "Orchard Road", "next_stop" : 16, "stop_type" : "", "a_time" : "09:13"}, 
+     {"bus_id" : 256, "stop_id" : 16, "stop_name" : "Sunset Boulevard", "next_stop" : 17, "stop_type" : "", "a_time" : "09:26"}, 
+     {"bus_id" : 256, "stop_id" : 17, "stop_name" : "Khao San Road", "next_stop" : 20, "stop_type" : "O", "a_time" : "10:25"},
+     {"bus_id" : 256, "stop_id" : 20, "stop_name" : "Michigan Avenue", "next_stop" : 0, "stop_type" : "F", "a_time" : "11:26"},
+     {"bus_id" : 512, "stop_id" : 6, "stop_name" : "Arlington Road", "next_stop" : 7, "stop_type" : "S", "a_time" : "11:06"}, 
+     {"bus_id" : 512, "stop_id" : 7, "stop_name" : "Parizska Street", "next_stop" : 8, "stop_type" : "", "a_time" : "11:15"}, 
+     {"bus_id" : 512, "stop_id" : 8, "stop_name" : "Elm Street", "next_stop" : 9, "stop_type" : "", "a_time" : "11:56"}, 
+     {"bus_id" : 512, "stop_id" : 9, "stop_name" : "Niebajka Avenue", "next_stop" : 15, "stop_type" : "", "a_time" : "12:20"}, 
+     {"bus_id" : 512, "stop_id" : 15, "stop_name" : "Jakis Street", "next_stop" : 16, "stop_type" : "", "a_time" : "12:44"}, 
+     {"bus_id" : 512, "stop_id" : 16, "stop_name" : "Sunset Boulevard", "next_stop" : 18, "stop_type" : "", "a_time" : "13:01"}, 
+     {"bus_id" : 512, "stop_id" : 18, "stop_name" : "Jakas Avenue", "next_stop" : 19, "stop_type" : "", "a_time" : "14:00"}, 
+     {"bus_id" : 1024, "stop_id" : 21, "stop_name" : "Karlikowska Avenue", "next_stop" : 12, "stop_type" : "S", "a_time" : "13:01"}, 
+     {"bus_id" : 1024, "stop_id" : 12, "stop_name" : "Sesame Street", "next_stop" : 0, "stop_type" : "F", "a_time" : "14:00"}, 
+     {"bus_id" : 512, "stop_id" : 19, "stop_name" : "Prospekt Avenue", "next_stop" : 0, "stop_type" : "F", "a_time" : "14:11"}]
+
+with open("movies.json", "w") as f1:
+    json.dump(n, f1)
+
+
+
+with open("movies.json", "r") as f2:
+    errors = json.load(f2)
+
+count_bus_id = 0
+count_stop_id = 0
+count_stop_name = 0
+count_next_stop = 0
+count_stop_type = 0
+count_a_time = 0
+count_errors = 0
+count_bus_128 = 0
+count_bus_256 = 0
+count_bus_512 = 0
+count_bus_1024 = 0
+_list_start = []
+_list_transfer = []
+_list_stop = []
+_list_128 = []
+_list_256 = []
+_list_512 = []
+_list_1024 = []
+wrong_time_128 = []
+wrong_time_256 = []
+wrong_time_512 = []
+wrong_time_1024 = []
+now_time = ''
+wrong_time = []
+wrong_type_o = []
+wrong_type_f = []
+wrong_type = []
+
+
+for i in range(len(errors)):
+    if errors[i]['stop_type'] == '' and re.match("(Sesame Street|Sunset Boulevard|Elm Street)$", errors[i]['stop_name']):
+        _list_transfer.append(errors[i]['stop_name'])
+    if errors[i]['bus_id'] == 128 and errors[i]['stop_type'] == 'S':
+        _list_128.append(errors[i]['stop_name'])
+        _list_start.append(errors[i]['stop_name'])
+    elif errors[i]['bus_id'] == 128 and errors[i]['stop_type'] == 'F':
+        _list_128.append(errors[i]['stop_name'])
+        _list_stop.append(errors[i]['stop_name'])
+    if errors[i]['bus_id'] == 256 and errors[i]['stop_type'] == 'S':
+        _list_256.append(errors[i]['stop_name'])
+        _list_start.append(errors[i]['stop_name'])
+    elif errors[i]['bus_id'] == 256 and errors[i]['stop_type'] == 'F':
+        _list_256.append(errors[i]['stop_name'])
+        _list_stop.append(errors[i]['stop_name'])
+    if errors[i]['bus_id'] == 512 and errors[i]['stop_type'] == 'S':
+        _list_512.append(errors[i]['stop_name'])
+        _list_start.append(errors[i]['stop_name'])
+    elif errors[i]['bus_id'] == 512 and errors[i]['stop_type'] == 'F':
+        _list_512.append(errors[i]['stop_name'])
+        _list_stop.append(errors[i]['stop_name'])
+    if errors[i]['bus_id'] == 1024 and errors[i]['stop_type'] == 'S':
+        _list_1024.append(errors[i]['stop_name'])
+        _list_start.append(errors[i]['stop_name'])
+    elif errors[i]['bus_id'] == 1024 and errors[i]['stop_type'] == 'F':
+        _list_1024.append(errors[i]['stop_name'])
+        _list_stop.append(errors[i]['stop_name']) 
+        
+    if errors[i]['bus_id'] == '' or type(errors[i]['bus_id']) != int:
+        count_bus_id += 1
+    if errors[i]['stop_id'] == '' or type(errors[i]['stop_id']) != int:
+        count_stop_id += 1 
+    if errors[i]['stop_name'] == '' or type(errors[i]['stop_name']) != str or not re.match("^([A-Z][a-z]+ )+(Road|Avenue|Boulevard|Street)$", errors[i]['stop_name']):            
+        count_stop_name += 1
+    if errors[i]['next_stop'] == '' or type(errors[i]['next_stop']) != int:
+        count_next_stop += 1  
+    if type(errors[i]['stop_type']) != str or not re.match('^[SOF]?$', errors[i]['stop_type']):
+        count_stop_type += 1 
+    if errors[i]['a_time'] == '' or type(errors[i]['a_time']) != str or not re.match('[0-2][0-9]:[0-5][0-9]$', errors[i]['a_time']):
+        count_a_time += 1        
+count_errors += count_bus_id + count_stop_id + count_stop_name + count_next_stop + count_stop_type + count_a_time 
+
+if  0 < len(_list_128) < 2:
+    print("There is no start or end stop for the line: 128.")    
+elif 0 < len(_list_256) < 2:
+    print("There is no start or end stop for the line: 256.")
+elif 0 < len(_list_512) < 2:
+    print("There is no start or end stop for the line: 512.") 
+elif 0 < len(_list_1024) < 2:
+    print("There is no start or end stop for the line: 1024.")       
+else:
+    if len(set(_list_128) & set(_list_256)) > 0:
+        _list_transfer.append(*(set(_list_128) & set(_list_256)))
+    elif len(set(_list_128) & set(_list_512)) > 0:
+        _list_transfer.append(*(set(_list_128) & set(_list_512)))
+    elif len(set(_list_128) & set(_list_1024)) > 0:
+        _list_transfer.append(*(set(_list_128) & set(_list_1024)))     
+    elif len(set(_list_256) & set(_list_512)) > 0:
+        _list_transfer.append(*(set(_list_256) & set(_list_512)))
+    elif len(set(_list_256) & set(_list_1024)) > 0:
+        _list_transfer.append(*(set(_list_256) & set(_list_1024)))
+    elif len(set(_list_512) & set(_list_1024)) > 0:
+        _list_transfer.append(*(set(_list_512) & set(_list_1024)))    
+for i in range(len(errors)):
+    if errors[i]['bus_id'] == 128 and errors[i]['stop_type'] == 'S':
+        now_time = errors[i]['a_time']
+    elif errors[i]['bus_id'] == 128 and errors[i]['stop_type'] != 'S':
+        if errors[i]['a_time'] <= now_time: 
+            wrong_time_128.append(errors[i]['stop_name'])
+            break
+        elif errors[i]['a_time'] > now_time:
+            now_time = errors[i]['a_time']
+for i in range(len(errors)):            
+    if errors[i]['bus_id'] == 256 and errors[i]['stop_type'] == 'S':
+        now_time = errors[i]['a_time']
+    elif errors[i]['bus_id'] == 256 and errors[i]['stop_type'] != 'S':
+        if errors[i]['a_time'] <= now_time: 
+            wrong_time_256.append(errors[i]['stop_name'])
+            break
+        elif errors[i]['a_time'] > now_time:
+            now_time = errors[i]['a_time']
+for i in range(len(errors)):            
+    if errors[i]['bus_id'] == 512 and errors[i]['stop_type'] == 'S':
+        now_time = errors[i]['a_time']
+    elif errors[i]['bus_id'] == 512 and errors[i]['stop_type'] != 'S':
+        if errors[i]['a_time'] <= now_time: 
+            wrong_time_512.append(errors[i]['stop_name'])
+            break
+        elif errors[i]['a_time'] > now_time:
+            now_time = errors[i]['a_time']
+for i in range(len(errors)):            
+    if errors[i]['bus_id'] == 1024 and errors[i]['stop_type'] == 'S':
+        now_time = errors[i]['a_time']
+    elif errors[i]['bus_id'] == 1024 and errors[i]['stop_type'] != 'S':
+        if errors[i]['a_time'] <= now_time: 
+            wrong_time_1024.append(errors[i]['stop_name'])
+            break
+        elif errors[i]['a_time'] > now_time:
+            now_time = errors[i]['a_time']            
+    
+if len(wrong_time_128) == 1:
+    wrong_time.append(f'bus_id line 128: wrong time on station {wrong_time_128[0]}')
+if len(wrong_time_256) == 1:
+    wrong_time.append(f'bus_id line 256: wrong time on station {wrong_time_256[0]}')
+if len(wrong_time_512) == 1:
+    wrong_time.append(f'bus_id line 512: wrong time on station {wrong_time_512[0]}') 
+if len(wrong_time_1024) == 1:
+    wrong_time.append(f'bus_id line 1024: wrong time on station {wrong_time_1024[0]}') 
+
+if len(wrong_time) == 0:   
+    print('Arrival time test:', 'OK', sep='\n')
+else:
+    print('Arrival time test:', *wrong_time, sep='\n')
+
+for i in range(len(errors)):
+    if errors[i]['stop_type'] == 'O':
+        wrong_type_o.append(errors[i]['stop_name'])
+    elif errors[i]['stop_type'] == 'F' or errors[i]['stop_type'] == '':
+        wrong_type_f.append(errors[i]['stop_name'])
+        
+wrong_type = set(wrong_type_o) & set(wrong_type_f)        
+if len(wrong_type) == 0:
+    print("On demand stops test:", 'OK', sep='\n')
+else:
+    print("Wrong stop type: ", sorted(wrong_type))
+
+for i in range(len(errors)):
+    if errors[i]['bus_id'] == 128:
+        count_bus_128 += 1
+    elif errors[i]['bus_id'] == 256:
+        count_bus_256 += 1
+    elif errors[i]['bus_id'] == 512:
+        count_bus_512 += 1
+    elif errors[i]['bus_id'] == 1024:
+        count_bus_1024 += 1
+    if errors[i]['bus_id'] == '' or type(errors[i]['bus_id']) != int:
+        count_bus_id += 1
+    if errors[i]['stop_id'] == '' or type(errors[i]['stop_id']) != int:
+        count_stop_id += 1 
+    if errors[i]['stop_name'] == '' or type(errors[i]['stop_name']) != str or not re.match("^([A-Z][a-z]+ )+(Road|Avenue|Boulevard|Street)$", errors[i]['stop_name']):            
+        count_stop_name += 1
+    if errors[i]['next_stop'] == '' or type(errors[i]['next_stop']) != int:
+        count_next_stop += 1  
+    if type(errors[i]['stop_type']) != str or not re.match('^[SOF]?$', errors[i]['stop_type']):
+        count_stop_type += 1 
+    if errors[i]['a_time'] == '' or type(errors[i]['a_time']) != str or not re.match('[0-2][0-9]:[0-5][0-9]$', errors[i]['a_time']):
+        count_a_time += 1   
+count_errors += count_bus_id + count_stop_id + count_stop_name + count_next_stop + count_stop_type + count_a_time
+
+    
+print('Line names and number of stops:', f'bus_id: 128, stops: {count_bus_128}', f'bus_id: 256, stops: {count_bus_256}', f'bus_id: 512, stops: {count_bus_512}', f'bus_id: 1024, stops: {count_bus_1024}',sep='\n')
+print(f'Start stops: {len(list(set(_list_start)))} {sorted(list(set(_list_start)))}', f'Transfer stops: {len(list(set(_list_transfer)))} {sorted(list(set(_list_transfer)))}', f'Finish stops: {len(list(set(_list_stop)))} {sorted(list(set(_list_stop)))}', sep='\n')
+print(f'Format validation: {count_errors} errors', f'bus_id: {count_bus_id}' , f'stop_id: {count_stop_id}', f'stop_name: {count_stop_name}', f'next_stop: {count_next_stop}', f'stop_type: {count_stop_type}', f'a_time: {count_a_time}', sep='\n')      
+        
